@@ -76,7 +76,7 @@ class App(tk.Frame):
             self.update_files()
             tk.Button(self.cat_frame, text=name, command=None).pack()
             tk.messagebox.showinfo(
-                    "Information",
+                "Information",
                 f"Added category \"{name}\""
             )
 
