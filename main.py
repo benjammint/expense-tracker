@@ -1,22 +1,31 @@
 import re
 import tkinter as tk
 import tkinter.messagebox
-from tkinter import ttk
 
 class App(tk.Frame):
     def __init__(self, parent, *args, **kwargs):
-        tk.Frame.__init__(self, parent, *args, **kwargs)
         self.parent = parent
-
         self.title = "Expense Tracker"
         self.parent.title(self.title)
         self.parent.geometry("1000x600")
+
+        self.build_frames()
 
         self.cat_names = []
         self.cat_file = "categories.txt"
         self.load_files()
 
-        self.update_frame()
+        self.create_math_frame()
+        self.create_cat_frame()
+        self.create_add_cat_frame()
+
+    def build_frames(self):
+        self.math_frame = tk.Frame(self.parent)
+        self.math_frame.pack(side=tk.RIGHT, fill=tk.Y)
+        self.cat_frame = tk.Frame(self.parent)
+        self.cat_frame.pack(side=tk.TOP, fill=tk.X)
+        self.add_cat_frame = tk.Frame(self.parent)
+        self.add_cat_frame.pack(fill=tk.X)
 
     def load_files(self):
         try:
@@ -29,34 +38,28 @@ class App(tk.Frame):
         with open(self.cat_file, "w") as file:
             file.write("\n".join(self.cat_names))
 
-    def clear_frame(self):
-        # how to remove all widgets in a frame?
-        for widgets in self.winfo_children():
-            widgets.destroy()
+    def create_math_frame(self):
+        tk.Label(self.math_frame, text="Math").pack()
 
-    def update_frame(self):
-        xc, yc = 150, 50
-        tk.Label(self.parent, text="Categories").place(x=xc, y=yc)
+    def create_cat_frame(self):
+        tk.Label(self.cat_frame, text="Categories").pack()
         if not self.cat_names:
-            yc += 50
-            tk.Label(self.parent, text="Nothing yet!").place(x=xc, y=yc)
-        for i, cat in enumerate(self.cat_names):
-            yc = 40 * i + 100
-            tk.Button(
-                self.parent,
-                text=cat,
-                command=None
-            ).place(x=xc, y=yc)
+            tk.Label(self.cat_frame, text="Nothing yet!").pack()
+        for cat in self.cat_names:
+            tk.Button(self.cat_frame, text=cat, command=None).pack()
 
-        yc += 50
-        tk.Label(self.parent, text="Create Category").place(x=xc, y=yc)
-        self.cat_to_create = tk.Entry()
-        self.cat_to_create.place(x=xc + 120, y=yc)
+    def create_add_cat_frame(self):
+        tk.Label(
+            self.add_cat_frame,
+            text="Create Category"
+        ).pack(side=tk.LEFT)
+        self.cat_to_create = tk.Entry(self.add_cat_frame)
+        self.cat_to_create.pack(side=tk.LEFT)
         tk.Button(
-            self.parent,
+            self.add_cat_frame,
             text="Create",
             command=self.create_cat
-        ).place(x=xc + 330, y=yc)
+        ).pack(side=tk.LEFT)
 
     def create_cat(self):
         name = self.cat_to_create.get()
@@ -71,8 +74,9 @@ class App(tk.Frame):
         else:
             self.cat_names.append(name)
             self.update_files()
+            tk.Button(self.cat_frame, text=name, command=None).pack()
             tk.messagebox.showinfo(
-                "Information",
+                    "Information",
                 f"Added category \"{name}\""
             )
 
