@@ -16,14 +16,7 @@ class App(tk.Frame):
         self.cat_file = "categories.txt"
         self.load_files()
 
-        tk.Label(self.parent, text="Create Category").pack()
-        self.cat_to_create = tk.Entry()
-        self.cat_to_create.pack()
-        tk.Button(
-            self.parent,
-            text="Create",
-            command=self.create_cat
-        ).pack()
+        self.update_frame()
 
     def load_files(self):
         try:
@@ -35,6 +28,35 @@ class App(tk.Frame):
     def update_files(self):
         with open(self.cat_file, "w") as file:
             file.write("\n".join(self.cat_names))
+
+    def clear_frame(self):
+        # how to remove all widgets in a frame?
+        for widgets in self.winfo_children():
+            widgets.destroy()
+
+    def update_frame(self):
+        xc, yc = 150, 50
+        tk.Label(self.parent, text="Categories").place(x=xc, y=yc)
+        if not self.cat_names:
+            yc += 50
+            tk.Label(self.parent, text="Nothing yet!").place(x=xc, y=yc)
+        for i, cat in enumerate(self.cat_names):
+            yc = 40 * i + 100
+            tk.Button(
+                self.parent,
+                text=cat,
+                command=None
+            ).place(x=xc, y=yc)
+
+        yc += 50
+        tk.Label(self.parent, text="Create Category").place(x=xc, y=yc)
+        self.cat_to_create = tk.Entry()
+        self.cat_to_create.place(x=xc + 120, y=yc)
+        tk.Button(
+            self.parent,
+            text="Create",
+            command=self.create_cat
+        ).place(x=xc + 330, y=yc)
 
     def create_cat(self):
         name = self.cat_to_create.get()
