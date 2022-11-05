@@ -12,7 +12,7 @@ class App(tk.Frame):
         self.parent.title(self.title)
         self.parent.geometry("1000x600")
 
-        self.categories = []
+        self.cat_names = []
         self.cat_file = "categories.txt"
         self.load_files()
 
@@ -28,32 +28,31 @@ class App(tk.Frame):
     def load_files(self):
         try:
             with open(self.cat_file, "r") as file:
-                self.categories = [ line.rstrip() for line in file ]
+                self.cat_names = [ line.rstrip() for line in file ]
         except:
             pass
 
     def update_files(self):
         with open(self.cat_file, "w") as file:
-            file.write("\n".join(self.categories))
+            file.write("\n".join(self.cat_names))
 
     def create_cat(self):
         name = self.cat_to_create.get()
         error_msg = ""
 
-        if name in self.categories:
+        if not re.match("^[A-Za-z0-9_-]+$", name):
+            error_msg = "Category names must contain" \
+                      + " alphanumeric characters, underscores," \
+                      + " and/or dashes!"
+        elif name in self.cat_names:
             error_msg = "Category already exists!"
-
-        if re.match("^[A-Za-z0-9_-]+$", name) and not error_msg:
-            self.categories.append(name)
+        else:
+            self.cat_names.append(name)
             self.update_files()
             tk.messagebox.showinfo(
                 "Information",
                 f"Added category \"{name}\""
             )
-        else:
-            error_msg = "Category names must contain" \
-                      + " alphanumeric characters, underscores," \
-                      + " and/or dashes!"
 
         if error_msg:
             tk.messagebox.showinfo(
