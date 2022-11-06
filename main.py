@@ -1,97 +1,156 @@
+import csv
 import re
 import tkinter as tk
 import tkinter.messagebox
 
-class App(tk.Frame):
-    def __init__(self, parent, *args, **kwargs):
-        self.parent = parent
-        self.title = "Expense Tracker"
-        self.parent.title(self.title)
-        self.parent.geometry("1000x600")
+class App(tk.Tk):
+    def __init__(self, *args, **kwargs):
+        tk.Tk.__init__(self, *args, **kwargs)
+
+        self.title("Expense Tracker")
+        self.geometry("1000x600")
+
+        container = tk.Frame(self)
+        container.pack(fill=tk.BOTH, expand=True)
+        container.grid_rowconfigure(0, weight=1)
+        container.grid_columnconfigure(0, weight=1)
+
+        self.frames = {}
+        for F in (Home,):
+            page_name = F.__name__
+            frame = F(parent=container, controller=self)
+            self.frames[page_name] = frame
+            frame.grid(row=0, column=0, sticky="nsew")
+
+        self.show_frame("Home")
+
+    def show_frame(self, page_name):
+        frame = self.frames[page_name]
+        frame.tkraise()
+
+class Home(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
 
         self.build_frames()
 
-        self.cat_names = []
-        self.cat_file = "categories.txt"
+    def build_frames(self):
+        self.build_ta_frame()
+
+    def build_ta_frame(self):
+        ta_frame = tk.Frame(
+                self,
+                highlightbackground="black",
+                highlightthickness=1
+        )
+        ta_frame.pack(anchor=tk.NW, padx=10, pady=10)
+
+        ta_frame.columnconfigure(0, weight=3)
+        ta_frame.columnconfigure(1, weight=5)
+
+        self.ta_entries = [
+            ["Transaction Name", None],
+            ["Transaction Amount", None],
+            ["Transaction Description", None],
+        ]
+        for i, tae in enumerate(self.ta_entries):
+            tk.Label(ta_frame, text=tae[0]) \
+                .grid(column=0, row=i, sticky=tk.W, padx=5, pady=5)
+            tae[1] = tk.Entry(ta_frame)
+            tae[1].grid(column=1, row=i, sticky=tk.E, padx=5, pady=5)
+
+        # get previously saved data
+        # 0 transaction data
+        # 1 category names
+        self.data = [[]] * 2
+        self.data_files = [
+            "ta_data.csv",
+            "cat_names",
+        ]
         self.load_files()
 
-        self.create_math_frame()
-        self.create_cat_frame()
-        self.create_add_cat_frame()
+        tk.Label(ta_frame, text="Category") \
+            .grid(
+                column=0,
+                row=len(self.ta_entries),
+                sticky=tk.W,
+                padx=5,
+                pady=5
+            )
+        if self.data[1]:
+            self.cat_selected = StringVar()
+            self.cat_selected(self.data[1][0])
+            cat_drop = tk.OptionMenu(
+                ta_frame,
+                self.cat_selected,
+                *self.data[1]
+            ).grid(
+                column=1,
+                row=len(self.ta_entries),
+                sticky=tk.E,
+                padx=5,
+                pady=5
+            )
+        else:
+            tk.Label(ta_frame, text="Create a category!") \
+                .grid(
+                    column=1,
+                    row=len(self.ta_entries),
+                    sticky=tk.W,
+                    padx=5,
+                    pady=5
+                )
 
-    def build_frames(self):
-        self.math_frame = tk.Frame(self.parent)
-        self.math_frame.pack(side=tk.RIGHT, fill=tk.Y)
-        self.cat_frame = tk.Frame(self.parent)
-        self.cat_frame.pack(side=tk.TOP, fill=tk.X)
-        self.add_cat_frame = tk.Frame(self.parent)
-        self.add_cat_frame.pack(fill=tk.X)
+        tk.Button(ta_frame, text="Save transaction", command=self.save_ta) \
+            .grid(
+                column=1,
+                row=len(self.ta_entries) + 1,
+                sticky=tk.E,
+                padx=5,
+                pady=5
+            )
 
     def load_files(self):
+        for i, f in enumerate(self.data):
+            try:
+                with open(f, "r") as file:
+                    self.data[i] = [ line.rstrip() for line in file ]
+            except:
+                pass
+        
+    def check_ta_input(self):
+        if not self.ta_entries[0][1].get():
+            return "Must provide a name for the transaction!"
         try:
-            with open(self.cat_file, "r") as file:
-                self.cat_names = [ line.rstrip() for line in file ]
-        except:
-            pass
+            amt = float(self.ta_entries[1][1].get())
+            if amt * 100 > int(amt * 100):
+                return "There can only be two digits after the decimal!"
+        except ValueError:
+            return "The transaction amount must be a decimal number" \
+                + " (without units)!"
+        if not self.ta_entries[2][1].get():
+            return "Please provide a description for this transaction!"
+        if not self.data[1]:
+            return "Must categorize this transaction!"
+        return ""
 
-    def update_files(self):
-        with open(self.cat_file, "w") as file:
-            file.write("\n".join(self.cat_names))
-
-    def create_math_frame(self):
-        tk.Label(self.math_frame, text="Math").pack()
-
-    def create_cat_frame(self):
-        tk.Label(self.cat_frame, text="Categories").pack()
-        if not self.cat_names:
-            tk.Label(self.cat_frame, text="Nothing yet!").pack()
-        for cat in self.cat_names:
-            tk.Button(self.cat_frame, text=cat, command=None).pack()
-
-    def create_add_cat_frame(self):
-        tk.Label(
-            self.add_cat_frame,
-            text="Create Category"
-        ).pack(side=tk.LEFT)
-        self.cat_to_create = tk.Entry(self.add_cat_frame)
-        self.cat_to_create.pack(side=tk.LEFT)
-        tk.Button(
-            self.add_cat_frame,
-            text="Create",
-            command=self.create_cat
-        ).pack(side=tk.LEFT)
-
-    def create_cat(self):
-        name = self.cat_to_create.get()
-        error_msg = ""
-
-        if not re.match("^[A-Za-z0-9_-]+$", name):
-            error_msg = "Category names must contain" \
-                      + " alphanumeric characters, underscores," \
-                      + " and/or dashes!"
-        elif name in self.cat_names:
-            error_msg = "Category already exists!"
-        else:
-            self.cat_names.append(name)
-            self.update_files()
-            tk.Button(self.cat_frame, text=name, command=None).pack()
-            tk.messagebox.showinfo(
-                "Information",
-                f"Added category \"{name}\""
-            )
-
+    def save_ta(self):
+        error_msg = self.check_ta_input()
         if error_msg:
-            tk.messagebox.showinfo(
-                self.title,
-                f"Operation failed: {error_msg}"
-            )
+            tk.messagebox.showinfo("Information", f"{error_msg}")
+            return
 
-        self.cat_to_create.delete(0, tk.END)
+        self.ta_data.append([ row[1].get() for row in self.ta_entries ] \
+            .extend([ self.cat_selected.get() ]))
+        with open(self.data_files[0], "w") as file:
+            writer = csv.writer(file)
+            writer.writerows(self.data[0])
+            tk.messagebox.showinfo("Information", "Saved successfully!")
 
 def main():
-    root = tk.Tk()
-    App(root)
-    root.mainloop()
+    app = App()
+    app.mainloop()
 
 if __name__ == "__main__":
     main()
