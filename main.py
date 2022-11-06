@@ -83,7 +83,15 @@ class Home(tk.Frame):
                 padx=5,
                 pady=5
             )
-        self.create_cat_dropdown()
+        self.ta_cat_selected = tk.StringVar()
+        self.ta_dd_placeholder = None
+        self.create_cat_dropdown(
+            self.ta_frame,
+            self.ta_cat_selected,
+            self.ta_dd_placeholder,
+            len(self.ta_entries) + 1,
+            1
+        )
 
         tk.Button(
             self.ta_frame,
@@ -97,41 +105,53 @@ class Home(tk.Frame):
             pady=5
         )
 
-    def create_cat_dropdown(self):
+    def create_cat_dropdown(self, parent, selected, placeholder, row, col):
         if self.data[1]:
-            self.cat_selected = tk.StringVar()
-            self.cat_selected.set(self.data[1][0])
+            selected.set(self.data[1][0])
             cat_drop = tk.OptionMenu(
-                self.ta_frame,
-                self.cat_selected,
+                parent,
+                selected,
                 *self.data[1]
             ).grid(
-                row=len(self.ta_entries) + 1,
-                column=1,
+                row=row,
+                column=col,
                 sticky=tk.E,
                 padx=5,
                 pady=5
             )
         else:
-            self.cat_dd_placeholder = tk.Label(
-                self.ta_frame,
+            placeholder = tk.Label(
+                parent,
                 text="Create a category!"
             )
-            self.cat_dd_placeholder.grid(
-                row=len(self.ta_entries) + 1,
-                column=1,
+            placeholder.grid(
+                row=row,
+                column=col,
                 sticky=tk.W,
                 padx=5,
                 pady=5
             )
 
-    def update_cat_dropdown(self):
+    def update_cat_dropdown(
+        self,
+        parent,
+        selected,
+        label_placeholder,
+        row,
+        col
+    ):
         if len(self.data[1]) == 1:
-            self.cat_dd_placeholder.config(text="")
+            self.label_placeholder.config(text="")
         elif len(self.data[1]) == 0:
             self.cat_dd_placeholder.config(text="Create a category!")
             return
-        self.create_cat_dropdown()
+        self.create_cat_dropdown(
+            parent,
+            selected,
+            label_placeholder,
+            row,
+            col
+        )
 
     def load_files(self):
         try:
@@ -171,7 +191,7 @@ class Home(tk.Frame):
 
         self.data[0].append(
             [ row[1].get() for row in self.ta_entries ]
-            + [ self.cat_selected.get() ]
+            + [ self.ta_cat_selected.get() ]
         )
         with open(self.data_files[0], "w") as file:
             writer = csv.writer(file)
@@ -179,26 +199,26 @@ class Home(tk.Frame):
             tk.messagebox.showinfo("Information", "Saved successfully!")
             for tae in self.ta_entries:
                 tae[1].delete(0, tk.END)
-            self.cat_selected.set(self.data[1][0])
+            self.ta_cat_selected.set(self.data[1][0])
 
     def build_cat_frame(self):
-        cat_frame = tk.Frame(
+        self.cat_frame = tk.Frame(
             self,
             highlightbackground="black",
             highlightthickness=1
         )
-        cat_frame.pack(anchor=tk.NW, padx=10, pady=10)
+        self.cat_frame.pack(anchor=tk.NW, padx=10, pady=10)
 
-        cat_frame.columnconfigure(0, weight=3)
-        cat_frame.columnconfigure(1, weight=5)
-        cat_frame.columnconfigure(2, weight=5)
+        self.cat_frame.columnconfigure(0, weight=3)
+        self.cat_frame.columnconfigure(1, weight=5)
+        self.cat_frame.columnconfigure(2, weight=5)
 
-        tk.Label(cat_frame, text="Category Section") \
+        tk.Label(self.cat_frame, text="Category Section") \
             .grid(row=0, column=0, columnspan=3, padx=5, pady=5)
 
-        tk.Label(cat_frame, text="Create") \
+        tk.Label(self.cat_frame, text="Create") \
             .grid(row=1, column=0, sticky=tk.W, padx=5, pady=5)
-        self.cat_to_create = tk.Entry(cat_frame)
+        self.cat_to_create = tk.Entry(self.cat_frame)
         self.cat_to_create.grid(
             row=1,
             column=1,
@@ -207,10 +227,30 @@ class Home(tk.Frame):
             pady=5
         )
         tk.Button(
-            cat_frame,
+            self.cat_frame,
             text="Create category",
             command=self.create_cat
         ).grid(row=1, column=2, sticky=tk.E, padx=5, pady=5)
+
+        tk.Label(self.cat_frame, text="Edit") \
+            .grid(row=2, column=0, sticky=tk.W, padx=5, pady=5)
+        self.edit_cat_selected = tk.StringVar()
+        self.edit_cat_dd_placeholder = None
+        self.create_cat_dropdown(
+            self.cat_frame,
+            self.edit_cat_selected,
+            self.edit_cat_dd_placeholder,
+            2,
+            1
+        )
+        tk.Button(
+            self.cat_frame,
+            text="Edit category",
+            command=self.edit_cat
+        ).grid(row=2, column=2, sticky=tk.E, padx=5, pady=5)
+
+    def edit_cat(self):
+        pass
 
     def save_cats(self):
         with open(self.data_files[1], "w") as file:
@@ -218,7 +258,7 @@ class Home(tk.Frame):
 
     def create_cat(self):
         name = self.cat_to_create.get()
-        error_msg= ""
+        error_msg = ""
 
         if not re.match("^[A-Za-z0-9_-]+$", name):
             error_msg = "Category names must contain" \
@@ -229,7 +269,20 @@ class Home(tk.Frame):
         else:
             self.data[1].append(name)
             self.save_cats()
-            self.update_cat_dropdown()
+            self.update_cat_dropdown(
+                self.ta_frame,
+                self.ta_cat_selected,
+                self.ta_dd_placeholder,
+                len(self.ta_entries) + 1,
+                1
+            )
+            self.update_cat_dropdown(
+                self.cat_frame,
+                self.edit_cat_selected,
+                self.edit_cat_dd_placeholder,
+                2,
+                1
+            )
             tk.messagebox.showinfo(
                 "Information",
                 f"Added category \"{name}\""
