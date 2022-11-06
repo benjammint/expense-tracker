@@ -10,15 +10,15 @@ class App(tk.Tk):
         self.title("Expense Tracker")
         self.geometry("1000x600")
 
-        container = tk.Frame(self)
-        container.pack(fill=tk.BOTH, expand=True)
-        container.grid_rowconfigure(0, weight=1)
-        container.grid_columnconfigure(0, weight=1)
+        self.container = tk.Frame(self)
+        self.container.pack(fill=tk.BOTH, expand=True)
+        self.container.grid_rowconfigure(0, weight=1)
+        self.container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
         for F in (HomePage, EditCategoryPage):
             page_name = F.__name__
-            frame = F(parent=container, controller=self)
+            frame = F(parent=self.container, controller=self)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
@@ -249,8 +249,18 @@ class HomePage(tk.Frame):
         tk.Button(
             self.cat_frame,
             text="Edit category",
-            command=lambda: self.controller.show_frame("EditCategoryPage")
+            command=self.show_editc_page
         ).grid(row=2, column=2, sticky=tk.E, padx=5, pady=5)
+
+    def show_editc_page(self):
+        frame = EditCategoryPage(
+            parent=self.controller.container,
+            controller=self.controller,
+            cat_to_edit=self.edit_cat_selected.get()
+        )
+        self.controller.frames["EditCategoryPage"] = frame
+        frame.grid(row=0, column=0, sticky="nsew")
+        self.controller.show_frame("EditCategoryPage")
 
     def save_cats(self):
         with open(self.data_files[1], "w") as file:
@@ -297,12 +307,13 @@ class HomePage(tk.Frame):
         self.cat_to_create.delete(0, tk.END)
 
 class EditCategoryPage(tk.Frame):
-    def __init__(self, parent, controller):
+    def __init__(self, parent, controller, cat_to_edit=None):
         tk.Frame.__init__(self, parent)
         self.controller = controller
 
-        homep = self.controller.get_page("HomePage")
-        curcat = homep.edit_cat_selected.get()
+        homep = controller.get_page("HomePage")
+
+        curcat = cat_to_edit
 
         self.editc_frame = tk.Frame(
             self,
