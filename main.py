@@ -16,19 +16,22 @@ class App(tk.Tk):
         container.grid_columnconfigure(0, weight=1)
 
         self.frames = {}
-        for F in (Home,):
+        for F in (HomePage, EditCategoryPage):
             page_name = F.__name__
             frame = F(parent=container, controller=self)
             self.frames[page_name] = frame
             frame.grid(row=0, column=0, sticky="nsew")
 
-        self.show_frame("Home")
+        self.show_frame("HomePage")
 
     def show_frame(self, page_name):
         frame = self.frames[page_name]
         frame.tkraise()
 
-class Home(tk.Frame):
+    def get_page(self, page_name):
+        return self.frames[page_name]
+
+class HomePage(tk.Frame):
     def __init__(self, parent, controller):
         tk.Frame.__init__(self, parent)
         self.controller = controller
@@ -246,11 +249,8 @@ class Home(tk.Frame):
         tk.Button(
             self.cat_frame,
             text="Edit category",
-            command=self.edit_cat
+            command=lambda: self.controller.show_frame("EditCategoryPage")
         ).grid(row=2, column=2, sticky=tk.E, padx=5, pady=5)
-
-    def edit_cat(self):
-        pass
 
     def save_cats(self):
         with open(self.data_files[1], "w") as file:
@@ -295,6 +295,31 @@ class Home(tk.Frame):
             )
 
         self.cat_to_create.delete(0, tk.END)
+
+class EditCategoryPage(tk.Frame):
+    def __init__(self, parent, controller):
+        tk.Frame.__init__(self, parent)
+        self.controller = controller
+
+        homep = self.controller.get_page("HomePage")
+        curcat = homep.edit_cat_selected.get()
+
+        self.editc_frame = tk.Frame(
+            self,
+            highlightbackground="black",
+            highlightthickness=1
+        )
+        self.editc_frame.pack(padx=10, pady=10)
+
+        for i in range(3):
+            self.editc_frame.columnconfigure(i, weight=5)
+
+        self.title = tk.Label(
+            self.editc_frame,
+            text=f"Editing category \"{curcat}\""
+        ).grid(row=0, column=0, padx=5, pady=5)
+
+        self.tas = [ ta for ta in homep.data[0] ]
 
 def main():
     app = App()
