@@ -13,55 +13,39 @@ data_files = [
 ]
 
 class App(tk.Tk):
-    def __init__(self, *args, **kwargs):
-        tk.Tk.__init__(self, *args, **kwargs)
+    def __init__(self):
+        tk.Tk.__init__(self)
+        self._frame = None
+        self.switch_frame(StartPage)
 
         self.title("Expense Tracker")
         self.geometry("1000x600")
 
-        self.container = tk.Frame(self)
-        self.container.pack(fill=tk.BOTH, expand=True)
-        self.container.grid_rowconfigure(0, weight=1)
-        self.container.grid_columnconfigure(0, weight=1)
+    def switch_frame(self, frame_class):
+        new_frame = frame_class(self)
+        if self._frame is not None:
+            self._frame.destroy()
+        self._frame = new_frame
+        self._frame.pack(fill=tk.BOTH, expand=True)
 
-        self.frames = {}
-        for F in (HomePage,):
-            page_name = F.__name__
-            frame = F(parent=self.container, controller=self)
-            self.frames[page_name] = frame
-            frame.grid(row=0, column=0, sticky=tk.NSEW)
-
-        self.show_frame("HomePage")
-
-    def show_frame(self, page_name):
-        frame = self.frames[page_name]
-        frame.tkraise()
-
-class HomePage(tk.Frame):
-    def __init__(self, parent, controller):
-        tk.Frame.__init__(self, parent)
-        self.controller = controller
-
-        self.ta_frame = HomeTaFrame(self)
-        self.cat_frame = HomeCatFrame(self)
-
-    def refresh_frame(self, builder):
-        if builder.frame:
-            builder.frame.grid_forget()
-        builder.build()
-
-class HomeTaFrame(tk.Frame):
+class StartPage(tk.Frame):
     def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
         self.parent = parent
-        self.frame = None
-        self.parent.refresh_frame(self)
+
+        self.ta_frame = StartTaFrame(self)
+        self.cat_frame= StartCatFrame(self)
+
+class StartTaFrame(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.pack(fill=tk.BOTH)
+        self.parent = parent
+
+        self.build()
 
     def build(self):
-        self.frame = build_grid_frame(
-            parent=self.parent,
-            anchor=tk.NW,
-            columns=2,
-        )
+        self.frame = build_grid_frame(parent=self, anchor=tk.NW, cols=2)
 
         build_grid_label(
             parent=self.frame,
@@ -83,10 +67,10 @@ class HomeTaFrame(tk.Frame):
             build_grid_entry(self.frame, row=i + 1, col=1)
 
         build_grid_label(self.frame, "Category", len(self.ta_entries) + 1, 0)
-        ta_entry_cat = tk.StringVar()
-        build_grid_dropdown(
+        self.ta_entry_cat = tk.StringVar()
+        self.cat_menu = build_grid_dropdown(
             parent=self.frame,
-            shownopt=ta_entry_cat,
+            shownopt=self.ta_entry_cat,
             options=data["categories"],
             row=len(self.ta_entries) + 1,
             col=1,
@@ -95,24 +79,22 @@ class HomeTaFrame(tk.Frame):
 
         build_grid_button(
             parent=self.frame,
-            text="Create category",
+            text="Add transaction",
             row=len(self.ta_entries) + 2, 
             col=1,
             callback=None,
         )
 
-class HomeCatFrame(tk.Frame):
+class StartCatFrame(tk.Frame):
     def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.pack(fill=tk.BOTH)
         self.parent = parent
-        self.frame = None
-        self.parent.refresh_frame(self)
+        
+        self.build()
 
     def build(self):
-        self.frame = build_grid_frame(
-            parent=self.parent,
-            anchor=tk.NW,
-            columns=3,
-        )
+        self.frame = build_grid_frame(parent=self, anchor=tk.NW, cols=3)
 
         build_grid_label(
             parent=self.frame,
@@ -123,30 +105,53 @@ class HomeCatFrame(tk.Frame):
             sticky=tk.N,
         )
 
-        build_grid_label(
-            parent=self.frame,
-            text="Create",
-            row=1,
-            col=0,
-        )
-        build_grid_entry(parent=self.frame, row=1, col=1)
+        build_grid_label(parent=self.frame, text="Create", row=1, col=0)
+        self.cat_to_create = build_grid_entry(parent=self.frame, row=1, col=1)
         build_grid_button(
             parent=self.frame,
             text="Create category",
             row=1,
             col=2,
-            callback=None,
+            callback=self.create_cat,
         )
 
+    def create_cat(self):
+        desired_cat = self.cat_to_create.get()
+        errmsg = check_valid_str(desired_cat)
+        if errmsg:
+            tk.messagebox.showinfo("Information", f"Operation failed: {errmsg}")
+            return
+        if desired_cat in data["categories"]:
+            tk.messagebox.showinfo(
+                "Information",
+                "Operation failed: Category already exists!",
+            )
+            return
+        data["categories"].append(desired_cat)
+        tk.messagebox.showinfo(
+            "Information",
+            f"Saved {desired_cat} successfully!",
+        )
+        self.parent.ta_frame.cat_menu = None
+        self.cat_menu = build_grid_dropdown(
+            parent=self.parent.ta_frame.frame,
+            shownopt=self.parent.ta_frame.ta_entry_cat,
+            options=data["categories"],
+            row=len(self.parent.ta_frame.ta_entries) + 1,
+            col=1,
+            errmsg="Create a category!",
+        )
 
-def build_grid_frame(parent, anchor=tk.CENTER, columns=1):
+        self.cat_to_create.delete(0, tk.END)
+
+def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
     frame = tk.Frame(
         parent,
         highlightbackground="black",
         highlightthickness=1,
     )
     frame.pack(anchor=anchor, padx=10, pady=10)
-    for i in range(columns):
+    for i in range(cols):
         frame.columnconfigure(i)
     return frame
 
@@ -162,8 +167,9 @@ def build_grid_label(parent, text, row, col, colspan=1, sticky=tk.W):
         )
 
 def build_grid_entry(parent, row, col):
-    return tk.Entry(parent) \
-        .grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+    entry = tk.Entry(parent)
+    entry.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+    return entry
 
 def build_grid_dropdown(parent, shownopt, options, row, col, errmsg):
     if not options:
@@ -177,8 +183,15 @@ def build_grid_button(parent, text, row, col, callback):
     return tk.Button(parent, text=text, command=callback) \
         .grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
 
+def check_valid_str(test):
+    if re.match("^[A-Za-z0-9_\- ]+$", test):
+        return ""
+    return "Strings must only contain alphanumeric characters, underscores," \
+        + " dashes, and/or spaces!"
+
 def main():
-    App().mainloop()
+    app = App()
+    app.mainloop()
 
 if __name__ == "__main__":
     main()
