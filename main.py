@@ -5,7 +5,7 @@ import tkinter.messagebox
 
 data = {
     "categories": [],
-    "transactions": [],
+    "transactions": {},
 }
 data_files = [
     "categories.txt",
@@ -102,6 +102,7 @@ class StartTaFrame(tk.Frame):
         return ""
 
     def save_ta(self):
+        print([row[1].get() for row in self.ta_entries])
         errmsg = self.check_ta_input()
         if errmsg:
             tk.messagebox.showinfo("Information", f"Operation failed: {errmsg}")
@@ -110,12 +111,13 @@ class StartTaFrame(tk.Frame):
         for key in data["transactions"].keys():
             if cat_key == key:
                 data["transactions"][key].append([
-                    row[1].get() for self.ta_entries
+                    row[1].get() for row in self.ta_entries
                 ])
                 return
-        data["transactions"][cat_key].append([
-            row[1].get() for self.ta_entries
-        ])
+        data["transactions"][cat_key] = [
+            row[1].get() for row in self.ta_entries
+        ]
+        print(data)
 
 class StartCatFrame(tk.Frame):
     def __init__(self, parent):
@@ -219,6 +221,9 @@ def check_valid_str(test):
         return ""
     return "Strings must only contain alphanumeric characters, underscores," \
         + " dashes, and/or spaces!"
+
+def save_data():
+    pass
 
 def main():
     app = App()
