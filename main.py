@@ -64,13 +64,13 @@ class StartTaFrame(tk.Frame):
 
         for i, tae in enumerate(self.ta_entries):
             build_grid_label(self.frame, text=tae[0], row=i + 1, col=0)
-            build_grid_entry(self.frame, row=i + 1, col=1)
+            tae[1] = build_grid_entry(self.frame, row=i + 1, col=1)
 
         build_grid_label(self.frame, "Category", len(self.ta_entries) + 1, 0)
-        self.ta_entry_cat = tk.StringVar()
+        self.ta_selected_cat = tk.StringVar()
         self.cat_menu = build_grid_dropdown(
             parent=self.frame,
-            shownopt=self.ta_entry_cat,
+            shownopt=self.ta_selected_cat,
             options=data["categories"],
             row=len(self.ta_entries) + 1,
             col=1,
@@ -82,8 +82,40 @@ class StartTaFrame(tk.Frame):
             text="Add transaction",
             row=len(self.ta_entries) + 2, 
             col=1,
-            callback=None,
+            callback=self.save_ta,
         )
+
+    def check_ta_input(self):
+        if not self.ta_entries[0][1].get():
+            return "Must provide a name for the transaction!"
+        try:
+            amt = float(self.ta_entries[1][1].get())
+            if amt * 100 > int(amt * 100):
+                return "There can only be two digits after the decimal!"
+        except ValueError:
+            return "The transaction amount must be a decimal number" \
+                + " (without units)!"
+        if not self.ta_entries[2][1].get():
+            return "Please provide a description for this transaction!"
+        if not data["categories"]:
+            return "Must categorize this transaction!"
+        return ""
+
+    def save_ta(self):
+        errmsg = self.check_ta_input()
+        if errmsg:
+            tk.messagebox.showinfo("Information", f"Operation failed: {errmsg}")
+            return
+        cat_key = self.ta_selected_cat.get()
+        for key in data["transactions"].keys():
+            if cat_key == key:
+                data["transactions"][key].append([
+                    row[1].get() for self.ta_entries
+                ])
+                return
+        data["transactions"][cat_key].append([
+            row[1].get() for self.ta_entries
+        ])
 
 class StartCatFrame(tk.Frame):
     def __init__(self, parent):
@@ -135,13 +167,12 @@ class StartCatFrame(tk.Frame):
         self.parent.ta_frame.cat_menu = None
         self.cat_menu = build_grid_dropdown(
             parent=self.parent.ta_frame.frame,
-            shownopt=self.parent.ta_frame.ta_entry_cat,
+            shownopt=self.parent.ta_frame.ta_selected_cat,
             options=data["categories"],
             row=len(self.parent.ta_frame.ta_entries) + 1,
             col=1,
             errmsg="Create a category!",
         )
-
         self.cat_to_create.delete(0, tk.END)
 
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
