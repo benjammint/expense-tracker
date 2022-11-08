@@ -1,4 +1,3 @@
 etvenv/
 
-transactions.csv
-categories.txt
+data.json
