@@ -1,3 +1,4 @@
+import calendar
 import datetime
 import json
 import re
@@ -224,6 +225,7 @@ class StartStatsFrame(tk.Frame):
             text="Statistics Section",
             row=0,
             col=0,
+            colspan=4,
             sticky=tk.N,
         )
 
@@ -232,6 +234,26 @@ class StartStatsFrame(tk.Frame):
             text="Average Monthly Transactions",
             row=1,
             col=0,
+        )
+        self.stats_selected_year = tk.StringVar()
+        build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.stats_selected_year,
+            options=data["years"],
+            row=1,
+            col=1,
+            errmsg="Add a transaction!",
+            default=datetime.datetime.now().year,
+        )
+        self.stats_selected_month = tk.StringVar()
+        build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.stats_selected_month,
+            options=[ calendar.month_name[i + 1] for i in range(12) ],
+            row=1,
+            col=2,
+            errmsg="Add a transaction!",
+            default=datetime.datetime.now().month,
         )
 
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
@@ -261,11 +283,22 @@ def build_grid_entry(parent, row, col):
     entry.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
     return entry
 
-def build_grid_dropdown(parent, shownopt, options, row, col, errmsg):
+def build_grid_dropdown(
+    parent,
+    shownopt,
+    options,
+    row,
+    col,
+    errmsg,
+    default=None,
+):
     if not options:
         build_grid_label(parent, errmsg, row, col)
         return
-    shownopt.set(options[0])
+    if default:
+        shownopt.set(default)
+    else:
+        shownopt.set(options[0])
     return tk.OptionMenu(parent, shownopt, *options) \
         .grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
 
