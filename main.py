@@ -142,15 +142,19 @@ class StartTaFrame(tk.Frame):
             "Information",
             f"Transaction saved successfully!"
         )
-        refresh_grid_dropdown(
-            section_frame=self.parent.stats_frame,
-            dropdown_menu=self.parent.stats_frame.average_monthly_year_menu,
-            shownopt=self.parent.stats_frame.stats_selected_year,
-            options=data["years"],
+        self.refresh_stats_year_grid_dropdown(
+            menu=self.parent.stats_frame.average_monthly_year_menu,
+            shownopt=
+                self.parent.stats_frame.average_monthly_ta_amt_selected["year"],
             row=1,
             col=2,
-            errmsg="Add a transaction!",
-            defaultopt=str(datetime.datetime.now().year),
+        )
+        self.refresh_stats_year_grid_dropdown(
+            menu=self.parent.stats_frame.total_monthly_year_menu,
+            shownopt=
+                self.parent.stats_frame.total_monthly_ta_amt_selected["year"],
+            row=2,
+            col=2,
         )
         for entry in self.ta_entries:
             if entry[0] == "Date":
@@ -158,6 +162,18 @@ class StartTaFrame(tk.Frame):
             entry[1].delete(0, tk.END)
         self.ta_cal.selection_set(datetime.date.today())
         self.ta_selected_cat.set(data["categories"][0])
+
+    def refresh_stats_year_grid_dropdown(self, menu, shownopt, row, col):
+        refresh_grid_dropdown(
+            section_frame=self.parent.stats_frame,
+            dropdown_menu=menu,
+            shownopt=shownopt,
+            options=data["years"],
+            row=row,
+            col=col,
+            errmsg="Add a transaction!",
+            defaultopt=str(datetime.datetime.now().year),
+        )
 
 class StartCatFrame(tk.Frame):
     def __init__(self, parent):
@@ -287,23 +303,59 @@ class StartStatsFrame(tk.Frame):
             row=2,
             col=0,
         )
-#        build_grid_dropdown(
-#            parent=self.frame,
-#            shownopt=self.stats_selected_month,
-#            options=calendar_months,
-#            row = 2,
-#            col=1,
-#            defaultopt=calendar.month_name[datetime.datetime.now().month],
-#        )
+        self.total_monthly_ta_amt_selected = {
+            "month": tk.StringVar(),
+            "year": tk.StringVar(),
+        }
+        build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.total_monthly_ta_amt_selected["month"],
+            options=calendar_months,
+            row = 2,
+            col=1,
+            defaultopt=calendar.month_name[datetime.datetime.now().month],
+        )
+        self.total_monthly_year_menu = build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.total_monthly_ta_amt_selected["year"],
+            options=data["years"],
+            row=2,
+            col=2,
+            errmsg="Add a transaction!",
+            defaultopt=str(datetime.datetime.now().year),
+        )
+        self.monthly_total_label = build_grid_label(
+            parent=self.frame,
+            text="<- Calculate!",
+            row=2,
+            col=4,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Calculate",
+            row=2,
+            col=3,
+            callback=self.display_monthly_total,
+        )
+
+    def calc_monthly_total(self, month, year):
+        total = [
+            float(ta["amount"]) for ta in data["transactions"] \
+            if ta["year"] == year \
+            and calendar.month_name[int(ta["month"])] == month
+        ]
+        return total
+
+    def display_monthly_total(self):
+        month = self.total_monthly_ta_amt_selected["month"].get()
+        year = self.total_monthly_ta_amt_selected["year"].get()
+        text = "${:.2f}".format(sum(self.calc_monthly_total(month, year)))
+        self.monthly_total_label.config(text=text)
 
     def calc_monthly_average(self):
         month = self.average_monthly_ta_amt_selected["month"].get()
         year = self.average_monthly_ta_amt_selected["year"].get()
-        total = [
-            int(ta["amount"]) for ta in data["transactions"] \
-            if ta["year"] == year \
-            and calendar.month_name[int(ta["month"])] == month
-        ]
+        total = self.calc_monthly_total(month, year)
         if len(total) == 0:
             return -1
         return sum(total) / len(total)
