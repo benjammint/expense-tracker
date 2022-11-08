@@ -36,8 +36,9 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.parent = parent
 
-        self.ta_frame = StartTaFrame(self)
-        self.cat_frame= StartCatFrame(self)
+        self.stats_frame = StartStatsFrame(parent=self)
+        self.ta_frame = StartTaFrame(parent=self)
+        self.cat_frame= StartCatFrame(parent=self)
 
 class StartTaFrame(tk.Frame):
     def __init__(self, parent):
@@ -199,6 +200,25 @@ class StartCatFrame(tk.Frame):
             errmsg="Create a category!",
         )
         self.cat_to_create.delete(0, tk.END)
+
+class StartStatsFrame(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.pack(side=tk.RIGHT, anchor=tk.N)
+        self.parent = parent
+
+        self.build()
+
+    def build(self):
+        self.frame = build_grid_frame(parent=self, anchor=tk.NE)
+
+        build_grid_label(
+            parent=self.frame,
+            text="Statistics Section",
+            row=0,
+            col=0,
+            sticky=tk.N,
+        )
 
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
     frame = tk.Frame(
