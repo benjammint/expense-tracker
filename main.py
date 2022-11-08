@@ -20,6 +20,7 @@ class App(tk.Tk):
         self.title("Expense Tracker")
         self.geometry("1000x600")
         load_data()
+        print(data)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
@@ -230,6 +231,7 @@ def save_data():
 def load_data():
     try:
         with open(DATA_FILE, "r") as file:
+            global data
             data = json.load(file)
     except FileNotFoundError:
         pass
