@@ -10,7 +10,7 @@ data = {
     "categories": [], # this is needed for tk.OptionMenu()
     "transactions": [],
         # dict inside list
-        # contains { cat, yr, mon, day, amt, name, desc }
+        # contains { cat, yr, mon, day, amt,  desc }
 }
 
 class App(tk.Tk):
@@ -62,9 +62,8 @@ class StartTaFrame(tk.Frame):
 
         self.ta_entries = [
             [ l, None ] for l in (
-                "Name",
-                "Amount (USD)",
                 "Description",
+                "Amount (USD)",
                 "Date",
                 "Category",
             )
@@ -101,7 +100,7 @@ class StartTaFrame(tk.Frame):
 
     def check_ta_input(self):
         if not self.ta_entries[0][1].get():
-            return "Must provide a name for the transaction!"
+            return "Please provide a description for this transaction!"
         try:
             amt = float(self.ta_entries[1][1].get())
             if amt * 100 > int(amt * 100):
@@ -109,8 +108,6 @@ class StartTaFrame(tk.Frame):
         except ValueError:
             return "The transaction amount must be a decimal number" \
                 + " (without units)!"
-        if not self.ta_entries[2][1].get():
-            return "Please provide a description for this transaction!"
         if not data["categories"]:
             return "Must categorize this transaction!"
         return ""
@@ -123,9 +120,8 @@ class StartTaFrame(tk.Frame):
         cat_key = self.ta_selected_cat.get()
         data["transactions"].append({
             "category": self.ta_selected_cat.get(),
-            "name": self.ta_entries[0][1].get(),
+            "description": self.ta_entries[0][1].get(),
             "amount": self.ta_entries[1][1].get(),
-            "description": self.ta_entries[2][1].get(),
             "year": str(self.ta_cal.get_displayed_month()[1]),
             "month": str(self.ta_cal.get_displayed_month()[0]),
             "day": re.search("/(.+?)/", self.ta_cal.get_date()).group(1)
