@@ -8,6 +8,7 @@ import tkcalendar
 DATA_FILE = "data.json"
 data = {
     "categories": [], # this is needed for tk.OptionMenu()
+    "years": [], # will be sorted in ascending order
     "transactions": [],
         # dict inside list
         # contains { cat, yr, mon, day, amt,  desc }
@@ -117,12 +118,22 @@ class StartTaFrame(tk.Frame):
         if errmsg:
             tk.messagebox.showinfo("Information", f"Operation failed: {errmsg}")
             return
-        cat_key = self.ta_selected_cat.get()
+        year = self.ta_cal.get_displayed_month()[1]
+        if str(year) not in data["years"]:
+            added = False
+            for i, v in enumerate(data["years"]):
+                if year <= int(v):
+                    data["years"].insert(i, str(year))
+                    added = True
+                    break
+            if not added:
+                data["years"].append(str(year))
+                added ^= True
         data["transactions"].append({
             "category": self.ta_selected_cat.get(),
             "description": self.ta_entries[0][1].get(),
             "amount": self.ta_entries[1][1].get(),
-            "year": str(self.ta_cal.get_displayed_month()[1]),
+            "year": str(year),
             "month": str(self.ta_cal.get_displayed_month()[0]),
             "day": re.search("/(.+?)/", self.ta_cal.get_date()).group(1)
         })
@@ -206,7 +217,7 @@ class StartStatsFrame(tk.Frame):
         self.build()
 
     def build(self):
-        self.frame = build_grid_frame(parent=self, anchor=tk.NE)
+        self.frame = build_grid_frame(parent=self, anchor=tk.NE, cols=4)
 
         build_grid_label(
             parent=self.frame,
@@ -214,6 +225,13 @@ class StartStatsFrame(tk.Frame):
             row=0,
             col=0,
             sticky=tk.N,
+        )
+
+        build_grid_label(
+            parent=self.frame,
+            text="Average Monthly Transactions",
+            row=1,
+            col=0,
         )
 
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
