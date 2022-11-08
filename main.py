@@ -1,16 +1,15 @@
-import csv
+import json
 import re
 import tkinter as tk
 import tkinter.messagebox
 
+DATA_FILE = "data.json"
 data = {
     "categories": [],
-    "transactions": {},
+    "transactions": [],
+        # dict inside list
+        # contains { cat, yr, mon, day, amt, name, desc }
 }
-data_files = [
-    "categories.txt",
-    "transactions.csv",
-]
 
 class App(tk.Tk):
     def __init__(self):
@@ -20,6 +19,7 @@ class App(tk.Tk):
 
         self.title("Expense Tracker")
         self.geometry("1000x600")
+        load_data()
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
@@ -102,22 +102,22 @@ class StartTaFrame(tk.Frame):
         return ""
 
     def save_ta(self):
-        print([row[1].get() for row in self.ta_entries])
         errmsg = self.check_ta_input()
         if errmsg:
             tk.messagebox.showinfo("Information", f"Operation failed: {errmsg}")
             return
         cat_key = self.ta_selected_cat.get()
-        for key in data["transactions"].keys():
-            if cat_key == key:
-                data["transactions"][key].append([
-                    row[1].get() for row in self.ta_entries
-                ])
-                return
-        data["transactions"][cat_key] = [
-            row[1].get() for row in self.ta_entries
-        ]
-        print(data)
+        data["transactions"].append({
+            "category": self.ta_selected_cat.get(),
+            "name": self.ta_entries[0][1].get(),
+            "amount": self.ta_entries[1][1].get(),
+            "description": self.ta_entries[2][1].get(),
+        })
+        save_data()
+        tk.messagebox.showinfo(
+            "Information",
+            f"Transaction saved successfully!"
+        )
 
 class StartCatFrame(tk.Frame):
     def __init__(self, parent):
@@ -162,6 +162,7 @@ class StartCatFrame(tk.Frame):
             )
             return
         data["categories"].append(desired_cat)
+        save_data()
         tk.messagebox.showinfo(
             "Information",
             f"Saved {desired_cat} successfully!",
@@ -223,7 +224,15 @@ def check_valid_str(test):
         + " dashes, and/or spaces!"
 
 def save_data():
-    pass
+    with open(DATA_FILE, "w") as file:
+        file.write(json.dumps(data, indent=4))
+
+def load_data():
+    try:
+        with open(DATA_FILE, "r") as file:
+            data = json.load(file)
+    except FileNotFoundError:
+        pass
 
 def main():
     app = App()
