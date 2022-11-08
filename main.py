@@ -8,11 +8,11 @@ import tkcalendar
 
 DATA_FILE = "data.json"
 data = {
-    "categories": [], # this is needed for tk.OptionMenu()
+    "categories": [], # required for tk.OptionMenu()
     "years": [], # will be sorted in ascending order
     "transactions": [],
         # dict inside list
-        # contains { cat, yr, mon, day, amt,  desc }
+        # contains { category, year, month, day, amount, description }
 }
 
 class App(tk.Tk):
@@ -21,7 +21,7 @@ class App(tk.Tk):
         self._frame = None
 
         self.title("Expense Tracker")
-        self.geometry("1000x600")
+        #self.geometry("1000x600")
 
         load_data()
         self.switch_frame(StartPage)
@@ -40,7 +40,7 @@ class StartPage(tk.Frame):
 
         self.stats_frame = StartStatsFrame(parent=self)
         self.ta_frame = StartTaFrame(parent=self)
-        self.cat_frame= StartCatFrame(parent=self)
+        self.cat_frame = StartCatFrame(parent=self)
 
 class StartTaFrame(tk.Frame):
     def __init__(self, parent):
@@ -143,6 +143,16 @@ class StartTaFrame(tk.Frame):
             "Information",
             f"Transaction saved successfully!"
         )
+        refresh_grid_dropdown(
+            section_frame=self.parent.stats_frame,
+            dropdown_menu=self.parent.stats_frame.average_monthly_year_menu,
+            shownopt=self.parent.stats_frame.stats_selected_year,
+            options=data["years"],
+            row=1,
+            col=2,
+            errmsg="Add a transaction!",
+            defaultopt=str(datetime.datetime.now().year),
+        )
         for entry in self.ta_entries:
             if entry[0] == "Date":
                 break
@@ -198,9 +208,9 @@ class StartCatFrame(tk.Frame):
             "Information",
             f"Saved {desired_cat} successfully!",
         )
-        self.parent.ta_frame.cat_menu = None
-        self.cat_menu = build_grid_dropdown(
-            parent=self.parent.ta_frame.frame,
+        refresh_grid_dropdown(
+            section_frame=self.parent.ta_frame,
+            dropdown_menu=self.parent.ta_frame.cat_menu,
             shownopt=self.parent.ta_frame.ta_selected_cat,
             options=data["categories"],
             row=len(self.parent.ta_frame.ta_entries),
@@ -218,7 +228,7 @@ class StartStatsFrame(tk.Frame):
         self.build()
 
     def build(self):
-        self.frame = build_grid_frame(parent=self, anchor=tk.NE, cols=4)
+        self.frame = build_grid_frame(parent=self, anchor=tk.NE, cols=5)
 
         build_grid_label(
             parent=self.frame,
@@ -231,19 +241,9 @@ class StartStatsFrame(tk.Frame):
 
         build_grid_label(
             parent=self.frame,
-            text="Average Monthly Transactions",
+            text="Average Monthly Transactions Amount",
             row=1,
             col=0,
-        )
-        self.stats_selected_year = tk.StringVar()
-        build_grid_dropdown(
-            parent=self.frame,
-            shownopt=self.stats_selected_year,
-            options=data["years"],
-            row=1,
-            col=1,
-            errmsg="Add a transaction!",
-            default=datetime.datetime.now().year,
         )
         self.stats_selected_month = tk.StringVar()
         build_grid_dropdown(
@@ -251,10 +251,51 @@ class StartStatsFrame(tk.Frame):
             shownopt=self.stats_selected_month,
             options=[ calendar.month_name[i + 1] for i in range(12) ],
             row=1,
+            col=1,
+            errmsg="Add a transaction!",
+            defaultopt=calendar.month_name[datetime.datetime.now().month],
+        )
+        self.stats_selected_year = tk.StringVar()
+        self.average_monthly_year_menu = build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.stats_selected_year,
+            options=data["years"],
+            row=1,
             col=2,
             errmsg="Add a transaction!",
-            default=datetime.datetime.now().month,
+            defaultopt=str(datetime.datetime.now().year),
         )
+        self.monthly_average_label = build_grid_label(
+            parent=self.frame,
+            row=1,
+            col=4,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Calculate",
+            row=1,
+            col=3,
+            callback=self.display_monthly_average,
+        )
+
+    def calc_monthly_average(self):
+        month = self.stats_selected_month.get()
+        year = self.stats_selected_year.get()
+        total = [
+            int(ta["amount"]) for ta in data["transactions"] \
+            if ta["year"] == year \
+            and calendar.month_name[int(ta["month"])] == month
+        ]
+        if len(total) == 0:
+            return -1
+        return sum(total) / len(total)
+
+    def display_monthly_average(self):
+        average = self.calc_monthly_average()
+        text = "${:.2f}".format(average)
+        if average == -1:
+            text = "No transactions during this month!"
+        self.monthly_average_label.config(text=text)
 
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
     frame = tk.Frame(
@@ -267,16 +308,17 @@ def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
         frame.columnconfigure(i)
     return frame
 
-def build_grid_label(parent, text, row, col, colspan=1, sticky=tk.W):
-    return tk.Label(parent, text=text) \
-        .grid(
-            row=row,
-            column=col,
-            columnspan=colspan,
-            sticky=sticky,
-            padx=5,
-            pady=5,
-        )
+def build_grid_label(parent, row, col, text="", colspan=1, sticky=tk.W):
+    label = tk.Label(parent, text=text)
+    label.grid(
+        row=row,
+        column=col,
+        columnspan=colspan,
+        sticky=sticky,
+        padx=5,
+        pady=5,
+    )
+    return label
 
 def build_grid_entry(parent, row, col):
     entry = tk.Entry(parent)
@@ -290,17 +332,18 @@ def build_grid_dropdown(
     row,
     col,
     errmsg,
-    default=None,
+    defaultopt=None,
 ):
     if not options:
-        build_grid_label(parent, errmsg, row, col)
+        build_grid_label(parent=parent, text=errmsg, row=row, col=col)
         return
-    if default:
-        shownopt.set(default)
+    if defaultopt:
+        shownopt.set(defaultopt)
     else:
         shownopt.set(options[0])
-    return tk.OptionMenu(parent, shownopt, *options) \
-        .grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+    dropdown = tk.OptionMenu(parent, shownopt, *options)
+    dropdown.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+    return dropdown
 
 def build_grid_button(parent, text, row, col, callback):
     return tk.Button(parent, text=text, command=callback) \
@@ -321,6 +364,27 @@ def build_grid_cal(parent, row, col):
     )
     cal.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
     return cal
+
+def refresh_grid_dropdown(
+    section_frame,
+    dropdown_menu,
+    shownopt,
+    options,
+    row,
+    col,
+    errmsg,
+    defaultopt=None
+):
+    dropdown_menu = None
+    dropdown_menu = build_grid_dropdown(
+        parent=section_frame.frame,
+        shownopt=shownopt,
+        defaultopt=defaultopt,
+        options=options,
+        row=row,
+        col=col,
+        errmsg=errmsg,
+    )
 
 def check_valid_str(test):
     if re.match("^[A-Za-z0-9_\- ]+$", test):
