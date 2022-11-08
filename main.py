@@ -1,11 +1,13 @@
+import datetime
 import json
 import re
 import tkinter as tk
 import tkinter.messagebox
+import tkcalendar
 
 DATA_FILE = "data.json"
 data = {
-    "categories": [],
+    "categories": [], # this is needed for tk.OptionMenu()
     "transactions": [],
         # dict inside list
         # contains { cat, yr, mon, day, amt, name, desc }
@@ -58,22 +60,32 @@ class StartTaFrame(tk.Frame):
         )
 
         self.ta_entries = [
-            [ "Name", None ],
-            [ "Amount", None ],
-            [ "Description", None ],
+            [ l, None ] for l in (
+                "Name",
+                "Amount (USD)",
+                "Description",
+                "Date",
+                "Category",
+            )
         ]
 
         for i, tae in enumerate(self.ta_entries):
             build_grid_label(self.frame, text=tae[0], row=i + 1, col=0)
-            tae[1] = build_grid_entry(self.frame, row=i + 1, col=1)
+            if i < len(self.ta_entries) - 2:
+                tae[1] = build_grid_entry(self.frame, row=i + 1, col=1)
 
-        build_grid_label(self.frame, "Category", len(self.ta_entries) + 1, 0)
+        self.ta_cal = build_grid_cal(
+            parent=self.frame,
+            row=len(self.ta_entries) - 1,
+            col=1
+        )
+
         self.ta_selected_cat = tk.StringVar()
         self.cat_menu = build_grid_dropdown(
             parent=self.frame,
             shownopt=self.ta_selected_cat,
             options=data["categories"],
-            row=len(self.ta_entries) + 1,
+            row=len(self.ta_entries),
             col=1,
             errmsg="Create a category!",
         )
@@ -81,7 +93,7 @@ class StartTaFrame(tk.Frame):
         build_grid_button(
             parent=self.frame,
             text="Add transaction",
-            row=len(self.ta_entries) + 2, 
+            row=len(self.ta_entries) + 1,
             col=1,
             callback=self.save_ta,
         )
@@ -113,6 +125,9 @@ class StartTaFrame(tk.Frame):
             "name": self.ta_entries[0][1].get(),
             "amount": self.ta_entries[1][1].get(),
             "description": self.ta_entries[2][1].get(),
+            "year": str(self.ta_cal.get_displayed_month()[1]),
+            "month": str(self.ta_cal.get_displayed_month()[0]),
+            "day": re.search("/(.+?)/", self.ta_cal.get_date()).group(1)
         })
         save_data()
         tk.messagebox.showinfo(
@@ -120,7 +135,10 @@ class StartTaFrame(tk.Frame):
             f"Transaction saved successfully!"
         )
         for entry in self.ta_entries:
+            if entry[0] == "Date":
+                break
             entry[1].delete(0, tk.END)
+        self.ta_cal.selection_set(datetime.date.today())
         self.ta_selected_cat.set(data["categories"][0])
 
 class StartCatFrame(tk.Frame):
@@ -176,7 +194,7 @@ class StartCatFrame(tk.Frame):
             parent=self.parent.ta_frame.frame,
             shownopt=self.parent.ta_frame.ta_selected_cat,
             options=data["categories"],
-            row=len(self.parent.ta_frame.ta_entries) + 1,
+            row=len(self.parent.ta_frame.ta_entries),
             col=1,
             errmsg="Create a category!",
         )
@@ -220,6 +238,22 @@ def build_grid_dropdown(parent, shownopt, options, row, col, errmsg):
 def build_grid_button(parent, text, row, col, callback):
     return tk.Button(parent, text=text, command=callback) \
         .grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+
+def build_grid_cal(parent, row, col):
+    cal = tkcalendar.Calendar(
+        parent,
+        showweeknumbers=False,
+        background="white",
+        disabledbackground="white",
+        bordercolor="white",
+        headersbackground="white",
+        normalbackground="white",
+        foreground="black",
+        normalforeground="black",
+        headersforeground="black",
+    )
+    cal.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
+    return cal
 
 def check_valid_str(test):
     if re.match("^[A-Za-z0-9_\- ]+$", test):
