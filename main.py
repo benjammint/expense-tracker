@@ -15,12 +15,12 @@ class App(tk.Tk):
     def __init__(self):
         tk.Tk.__init__(self)
         self._frame = None
-        self.switch_frame(StartPage)
 
         self.title("Expense Tracker")
         self.geometry("1000x600")
+
         load_data()
-        print(data)
+        self.switch_frame(StartPage)
 
     def switch_frame(self, frame_class):
         new_frame = frame_class(self)
@@ -119,6 +119,9 @@ class StartTaFrame(tk.Frame):
             "Information",
             f"Transaction saved successfully!"
         )
+        for entry in self.ta_entries:
+            entry[1].delete(0, tk.END)
+        self.ta_selected_cat.set(data["categories"][0])
 
 class StartCatFrame(tk.Frame):
     def __init__(self, parent):
