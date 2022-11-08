@@ -21,7 +21,6 @@ class App(tk.Tk):
         self._frame = None
 
         self.title("Expense Tracker")
-        #self.geometry("1000x600")
 
         load_data()
         self.switch_frame(StartPage)
