@@ -234,9 +234,11 @@ class StartStatsFrame(tk.Frame):
             text="Statistics Section",
             row=0,
             col=0,
-            colspan=4,
+            colspan=5,
             sticky=tk.N,
         )
+
+        calendar_months = [ calendar.month_name[i + 1] for i in range(12) ]
 
         build_grid_label(
             parent=self.frame,
@@ -244,20 +246,21 @@ class StartStatsFrame(tk.Frame):
             row=1,
             col=0,
         )
-        self.stats_selected_month = tk.StringVar()
+        self.average_monthly_ta_amt_selected = {
+            "month": tk.StringVar(),
+            "year": tk.StringVar(),
+        }
         build_grid_dropdown(
             parent=self.frame,
-            shownopt=self.stats_selected_month,
-            options=[ calendar.month_name[i + 1] for i in range(12) ],
+            shownopt=self.average_monthly_ta_amt_selected["month"],
+            options=calendar_months,
             row=1,
             col=1,
-            errmsg="Add a transaction!",
             defaultopt=calendar.month_name[datetime.datetime.now().month],
         )
-        self.stats_selected_year = tk.StringVar()
         self.average_monthly_year_menu = build_grid_dropdown(
             parent=self.frame,
-            shownopt=self.stats_selected_year,
+            shownopt=self.average_monthly_ta_amt_selected["year"],
             options=data["years"],
             row=1,
             col=2,
@@ -266,6 +269,7 @@ class StartStatsFrame(tk.Frame):
         )
         self.monthly_average_label = build_grid_label(
             parent=self.frame,
+            text="<- Calculate!",
             row=1,
             col=4,
         )
@@ -277,9 +281,24 @@ class StartStatsFrame(tk.Frame):
             callback=self.display_monthly_average,
         )
 
+        build_grid_label(
+            parent=self.frame,
+            text="Monthly total",
+            row=2,
+            col=0,
+        )
+#        build_grid_dropdown(
+#            parent=self.frame,
+#            shownopt=self.stats_selected_month,
+#            options=calendar_months,
+#            row = 2,
+#            col=1,
+#            defaultopt=calendar.month_name[datetime.datetime.now().month],
+#        )
+
     def calc_monthly_average(self):
-        month = self.stats_selected_month.get()
-        year = self.stats_selected_year.get()
+        month = self.average_monthly_ta_amt_selected["month"].get()
+        year = self.average_monthly_ta_amt_selected["year"].get()
         total = [
             int(ta["amount"]) for ta in data["transactions"] \
             if ta["year"] == year \
@@ -330,7 +349,7 @@ def build_grid_dropdown(
     options,
     row,
     col,
-    errmsg,
+    errmsg="",
     defaultopt=None,
 ):
     if not options:
