@@ -41,6 +41,9 @@ class StartPage(tk.Frame):
         self.ta_frame = StartTaFrame(parent=self)
         self.cat_frame = StartCatFrame(parent=self)
 
+    def refresh(self):
+        self.parent.switch_frame(StartPage)
+
 class StartTaFrame(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -142,33 +145,35 @@ class StartTaFrame(tk.Frame):
             "Information",
             f"Transaction saved successfully!"
         )
-        self.refresh_stats_year_grid_dropdown(
-            menu=self.parent.stats_frame.average_monthly_year_menu,
-            shownopt=
-                self.parent.stats_frame.average_monthly_ta_amt_selected["year"],
-            row=1,
-            col=2,
-        )
-        self.refresh_stats_year_grid_dropdown(
-            menu=self.parent.stats_frame.total_monthly_year_menu,
-            shownopt=
-                self.parent.stats_frame.total_monthly_ta_amt_selected["year"],
-            row=2,
-            col=2,
-        )
-        self.refresh_stats_year_grid_dropdown(
-            menu=self.parent.stats_frame.average_monthly_cat_year_menu,
-            shownopt=self.parent.stats_frame. \
-                average_monthly_cat_ta_amt_selected["year"],
-            row=3,
-            col=3,
-        )
-        for entry in self.ta_entries:
-            if entry[0] == "Date":
-                break
-            entry[1].delete(0, tk.END)
-        self.ta_cal.selection_set(datetime.date.today())
-        self.ta_selected_cat.set(data["categories"][0])
+#        self.refresh_stats_year_grid_dropdown(
+#            menu=self.parent.stats_frame.average_monthly_year_menu,
+#            shownopt=
+#                self.parent.stats_frame.average_monthly_ta_amt_selected["year"],
+#            row=1,
+#            col=2,
+#        )
+#        self.refresh_stats_year_grid_dropdown(
+#            menu=self.parent.stats_frame.total_monthly_year_menu,
+#            shownopt=
+#                self.parent.stats_frame.total_monthly_ta_amt_selected["year"],
+#            row=2,
+#            col=2,
+#        )
+#        self.refresh_stats_year_grid_dropdown(
+#            menu=self.parent.stats_frame.average_monthly_cat_year_menu,
+#            shownopt=self.parent.stats_frame. \
+#                average_monthly_cat_ta_amt_selected["year"],
+#            row=3,
+#            col=3,
+#        )
+#        for entry in self.ta_entries:
+#            if entry[0] == "Date":
+#                break
+#            entry[1].delete(0, tk.END)
+#        self.ta_cal.selection_set(datetime.date.today())
+#        self.ta_selected_cat.set(data["categories"][0])
+
+        self.parent.refresh()
 
     def refresh_stats_year_grid_dropdown(self, menu, shownopt, row, col):
         refresh_grid_dropdown(
@@ -230,26 +235,28 @@ class StartCatFrame(tk.Frame):
             "Information",
             f"Saved {desired_cat} successfully!",
         )
-        refresh_grid_dropdown(
-            section_frame=self.parent.ta_frame,
-            dropdown_menu=self.parent.ta_frame.cat_menu,
-            shownopt=self.parent.ta_frame.ta_selected_cat,
-            options=data["categories"],
-            row=len(self.parent.ta_frame.ta_entries),
-            col=1,
-            errmsg="Create a category!",
-        )
-        refresh_grid_dropdown(
-            section_frame=self.parent.stats_frame,
-            dropdown_menu=self.parent.stats_frame.average_monthly_cat_menu,
-            shownopt=self.parent.stats_frame. \
-                average_monthly_cat_ta_amt_selected["cat"],
-            options=data["categories"],
-            row=3,
-            col=1,
-            errmsg="Create a category!",
-        )
-        self.cat_to_create.delete(0, tk.END)
+#        refresh_grid_dropdown(
+#            section_frame=self.parent.ta_frame,
+#            dropdown_menu=self.parent.ta_frame.cat_menu,
+#            shownopt=self.parent.ta_frame.ta_selected_cat,
+#            options=data["categories"],
+#            row=len(self.parent.ta_frame.ta_entries),
+#            col=1,
+#            errmsg="Create a category!",
+#        )
+#        refresh_grid_dropdown(
+#            section_frame=self.parent.stats_frame,
+#            dropdown_menu=self.parent.stats_frame.average_monthly_cat_menu,
+#            shownopt=self.parent.stats_frame. \
+#                average_monthly_cat_ta_amt_selected["cat"],
+#            options=data["categories"],
+#            row=3,
+#            col=1,
+#            errmsg="Create a category!",
+#        )
+#        self.cat_to_create.delete(0, tk.END)
+
+        self.parent.refresh()
 
 class StartStatsFrame(tk.Frame):
     def __init__(self, parent):
@@ -432,6 +439,187 @@ class StartStatsFrame(tk.Frame):
             col=4,
             callback=self.display_monthly_cat_total,
         )
+
+        build_grid_label(
+            parent=self.frame,
+            text="Yearly Average",
+            row=5,
+            col=0,
+        )
+        self.yearly_average_ta_amt_selected = tk.StringVar()
+        self.yearly_average_menu = build_year_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_average_ta_amt_selected,
+            row=5,
+            col=1,
+        )
+        self.yearly_average_amt_label = build_grid_label(
+            parent=self.frame,
+            text="<= Calculate!",
+            row=5,
+            col=3,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Calculate",
+            row=5,
+            col=2,
+            callback=self.display_yearly_average,
+        )
+
+        build_grid_label(
+            parent=self.frame,
+            text="Yearly Total",
+            row=6,
+            col=0,
+        )
+        self.yearly_total_ta_amt_selected = tk.StringVar()
+        self.yearly_total_menu = build_year_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_total_ta_amt_selected,
+            row=6,
+            col=1,
+        )
+        self.yearly_total_amt_label = build_grid_label(
+            parent=self.frame,
+            text="<= Calculate!",
+            row=6,
+            col=3,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Calculate",
+            row=6,
+            col=2,
+            callback=self.display_yearly_total,
+        )
+
+        build_grid_label(
+            parent=self.frame,
+            text="Yearly Category Average",
+            row=7,
+            col=0,
+        )
+        self.yearly_cat_average_ta_amt_selected = {
+            "cat": tk.StringVar(),
+            "year": tk.StringVar(),
+        }
+        build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_cat_average_ta_amt_selected["cat"],
+            options=data["categories"],
+            row=7,
+            col=1,
+            errmsg="Create a category!",
+        )
+        build_year_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_cat_average_ta_amt_selected["year"],
+            row=7,
+            col=2,
+        )
+        self.yearly_cat_average_label = build_grid_label(
+            parent=self.frame,
+            text="<= Calculate!",
+            row=7,
+            col=4,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Calculate",
+            row=7,
+            col=3,
+            callback=self.display_yearly_cat_average,
+        )
+
+        build_grid_label(
+            parent=self.frame,
+            text="Yearly Category Total",
+            row=8,
+            col=0,
+        )
+        self.yearly_cat_total_ta_amt_selected = {
+            "cat": tk.StringVar(),
+            "year": tk.StringVar(),
+        }
+        build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_cat_total_ta_amt_selected["cat"],
+            options=data["categories"],
+            row=8,
+            col=1,
+            errmsg="Create a category!",
+        )
+        build_year_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_cat_total_ta_amt_selected["year"],
+            row=8,
+            col=2,
+        )
+        self.yearly_cat_total_label = build_grid_label(
+            parent=self.frame,
+            text="<= Calculate!",
+            row=8,
+            col=4,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Calculate",
+            row=8,
+            col=3,
+            callback=self.display_yearly_cat_total,
+        )
+
+    def calc_yearly_cat_total(self):
+        year = self.yearly_cat_average_ta_amt_selected["year"].get()
+        cat = self.yearly_cat_average_ta_amt_selected["cat"].get()
+        return [
+            float(ta["amount"]) for ta in data["transactions"] \
+            if ta["year"] == year and ta["category"] == cat
+        ]
+
+    def display_yearly_cat_total(self):
+        text = "${:.2f}".format(sum(self.calc_yearly_cat_total()))
+        self.yearly_cat_total_label.config(text=text)
+
+    def calc_yearly_cat_average(self):
+        total = self.calc_yearly_cat_total()
+        if len(total) == 0:
+            return -1
+        return sum(total) / len(total)
+
+    def display_yearly_cat_average(self):
+        average = self.calc_yearly_cat_average()
+        text = "${:.2f}".format(average)
+        if average == -1:
+            text = "No transactions during this year!"
+        self.yearly_cat_average_label.config(text=text)
+
+    def calc_yearly_total(self, year):
+        total = [
+            float(ta["amount"]) for ta in data["transactions"] \
+            if ta["year"] == year
+        ]
+        return total
+
+    def display_yearly_total(self):
+        year = self.yearly_average_ta_amt_selected.get()
+        text = "${:.2f}".format(sum(self.calc_yearly_total(year)))
+        self.yearly_total_amt_label.config(text=text)
+
+    def calc_yearly_average(self):
+        year = self.yearly_average_ta_amt_selected.get()
+        total = self.calc_yearly_total(year)
+        if len(total) == 0:
+            return -1
+        return sum(total) / len(total)
+    
+    def display_yearly_average(self):
+        average = self.calc_yearly_average()
+        text = "${:.2f}".format(average)
+        if average == -1:
+            text = "No transactions during this year!"
+        self.yearly_average_amt_label.config(text=text)
 
     def calc_monthly_cat_total(self, month, year, category):
         total = [
