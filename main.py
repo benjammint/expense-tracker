@@ -535,10 +535,9 @@ class StartStatsFrame(tk.Frame):
 
         build_grid_label(
             parent=self.frame,
-            text="Graph Categories against Transaction Amounts (Lifetime)",
+            text="Graph Lifetime Transaction Amounts by Category",
             row=10,
             col=0,
-            colspan=3,
         )
         build_grid_button(
             parent=self.frame,
@@ -548,6 +547,39 @@ class StartStatsFrame(tk.Frame):
             callback=self.graph_cat_vs_ta_amt,
         )
 
+        build_grid_label(
+            parent=self.frame,
+            text="Graph Monthly Transaction Amounts in a Year",
+            row=11,
+            col=0,
+        )
+        self.monthly_tas_graph_year_selected = tk.StringVar()
+        build_year_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.monthly_tas_graph_year_selected,
+            row=11,
+            col=3,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Graph",
+            row=11,
+            col=4,
+            callback=self.graph_monthly_tas,
+        )
+
+    def graph_monthly_tas(self):
+        months = [ calendar.month_abbr[i + 1] for i in range(12) ]
+        amounts = [ 0 ] * len(months)
+        for ta in data["transactions"]:
+            amounts[int(ta["month"]) - 1] += float(ta["amount"])
+        plt.bar(months, amounts)
+        plt.title("Monthly Transactions")
+        plt.xlabel("Month")
+        plt.ylabel("Transaction Amount (in USD)")
+        plt.grid(True)
+        plt.show()
+
     def graph_cat_vs_ta_amt(self):
         amounts = [ 0 ] * len(data["categories"])
         for ta in data["transactions"]:
@@ -556,7 +588,7 @@ class StartStatsFrame(tk.Frame):
         plt.bar(data["categories"], amounts)
         plt.title("Transaction Amounts by Categories")
         plt.xlabel("Category")
-        plt.ylabel("Transaction Amount (in $)")
+        plt.ylabel("Transaction Amount (in USD)")
         plt.grid(True)
         plt.show()
 
