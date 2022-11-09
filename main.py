@@ -594,8 +594,8 @@ class StartStatsFrame(tk.Frame):
         plt.show()
 
     def calc_yearly_cat_total(self):
-        year = self.yearly_cat_average_ta_amt_selected["year"].get()
-        cat = self.yearly_cat_average_ta_amt_selected["cat"].get()
+        year = self.yearly_cat_total_ta_amt_selected["year"].get()
+        cat = self.yearly_cat_total_ta_amt_selected["cat"].get()
         return [
             float(ta["amount"]) for ta in data["transactions"] \
             if ta["year"] == year and ta["category"] == cat
