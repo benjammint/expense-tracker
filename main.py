@@ -1,6 +1,7 @@
 import calendar
 import datetime
 import json
+import matplotlib.pyplot as plt
 import re
 import tkinter as tk
 import tkinter.messagebox
@@ -145,33 +146,6 @@ class StartTaFrame(tk.Frame):
             "Information",
             f"Transaction saved successfully!"
         )
-#        self.refresh_stats_year_grid_dropdown(
-#            menu=self.parent.stats_frame.average_monthly_year_menu,
-#            shownopt=
-#                self.parent.stats_frame.average_monthly_ta_amt_selected["year"],
-#            row=1,
-#            col=2,
-#        )
-#        self.refresh_stats_year_grid_dropdown(
-#            menu=self.parent.stats_frame.total_monthly_year_menu,
-#            shownopt=
-#                self.parent.stats_frame.total_monthly_ta_amt_selected["year"],
-#            row=2,
-#            col=2,
-#        )
-#        self.refresh_stats_year_grid_dropdown(
-#            menu=self.parent.stats_frame.average_monthly_cat_year_menu,
-#            shownopt=self.parent.stats_frame. \
-#                average_monthly_cat_ta_amt_selected["year"],
-#            row=3,
-#            col=3,
-#        )
-#        for entry in self.ta_entries:
-#            if entry[0] == "Date":
-#                break
-#            entry[1].delete(0, tk.END)
-#        self.ta_cal.selection_set(datetime.date.today())
-#        self.ta_selected_cat.set(data["categories"][0])
 
         self.parent.refresh()
 
@@ -235,26 +209,6 @@ class StartCatFrame(tk.Frame):
             "Information",
             f"Saved {desired_cat} successfully!",
         )
-#        refresh_grid_dropdown(
-#            section_frame=self.parent.ta_frame,
-#            dropdown_menu=self.parent.ta_frame.cat_menu,
-#            shownopt=self.parent.ta_frame.ta_selected_cat,
-#            options=data["categories"],
-#            row=len(self.parent.ta_frame.ta_entries),
-#            col=1,
-#            errmsg="Create a category!",
-#        )
-#        refresh_grid_dropdown(
-#            section_frame=self.parent.stats_frame,
-#            dropdown_menu=self.parent.stats_frame.average_monthly_cat_menu,
-#            shownopt=self.parent.stats_frame. \
-#                average_monthly_cat_ta_amt_selected["cat"],
-#            options=data["categories"],
-#            row=3,
-#            col=1,
-#            errmsg="Create a category!",
-#        )
-#        self.cat_to_create.delete(0, tk.END)
 
         self.parent.refresh()
 
@@ -569,6 +523,40 @@ class StartStatsFrame(tk.Frame):
             col=3,
             callback=self.display_yearly_cat_total,
         )
+
+        build_grid_label(
+            parent=self.frame,
+            text="Graph Categories against Transaction Amounts",
+            row=9,
+            col=0,
+        )
+        build_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.yearly_cat_total_ta_amt_selected["cat"],
+            options=data["categories"],
+            row=9,
+            col=1,
+            errmsg="Create a category!",
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="Graph",
+            row=9,
+            col=2,
+            callback=self.graph_cat_vs_ta_amt,
+        )
+
+    def graph_cat_vs_ta_amt(self):
+        amounts = [ 0 ] * len(data["categories"])
+        for ta in data["transactions"]:
+            i = data["categories"].index(ta["category"])
+            amounts[i] += float(ta["amount"])
+        plt.bar(data["categories"], amounts)
+        plt.title("Transaction Amounts by Categories")
+        plt.xlabel("Category")
+        plt.ylabel("Transaction Amount (in $)")
+        plt.grid(True)
+        plt.show()
 
     def calc_yearly_cat_total(self):
         year = self.yearly_cat_average_ta_amt_selected["year"].get()
