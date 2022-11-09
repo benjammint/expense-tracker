@@ -530,19 +530,11 @@ class StartStatsFrame(tk.Frame):
             row=9,
             col=0,
         )
-        build_grid_dropdown(
-            parent=self.frame,
-            shownopt=self.yearly_cat_total_ta_amt_selected["cat"],
-            options=data["categories"],
-            row=9,
-            col=1,
-            errmsg="Create a category!",
-        )
         build_grid_button(
             parent=self.frame,
             text="Graph",
             row=9,
-            col=2,
+            col=1,
             callback=self.graph_cat_vs_ta_amt,
         )
 
