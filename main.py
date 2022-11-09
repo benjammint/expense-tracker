@@ -41,6 +41,7 @@ class StartPage(tk.Frame):
         self.stats_frame = StartStatsFrame(parent=self)
         self.ta_frame = StartTaFrame(parent=self)
         self.cat_frame = StartCatFrame(parent=self)
+        self.view_ta_frame = StartViewTaFrame(parent=self)
 
     def refresh(self):
         self.parent.switch_frame(StartPage)
@@ -705,6 +706,83 @@ class StartStatsFrame(tk.Frame):
         if average == -1:
             text = "No transactions during this month!"
         self.monthly_average_label.config(text=text)
+
+class StartViewTaFrame(tk.Frame):
+    def __init__(self, parent):
+        tk.Frame.__init__(self, parent)
+        self.pack()
+        self.parent = parent
+
+        self.build()
+
+    def build(self):
+        self.frame = build_grid_frame(parent=self, cols=4)
+
+        build_grid_label(
+            parent=self.frame,
+            text="View Transactions",
+            row=0,
+            col=0,
+            colspan=4,
+            sticky=tk.N,
+        )
+
+        build_grid_label(
+            parent=self.frame,
+            text="View for",
+            row=1,
+            col=0,
+        )
+        self.month_selected = tk.StringVar()
+        build_month_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.month_selected,
+            row=1,
+            col=1,
+        )
+        self.year_selected = tk.StringVar()
+        build_year_grid_dropdown(
+            parent=self.frame,
+            shownopt=self.year_selected,
+            row=1,
+            col=2,
+        )
+        build_grid_button(
+            parent=self.frame,
+            text="View",
+            row=1,
+            col=3,
+            callback=self.display_tas,
+        )
+
+    def display_tas(self):
+        messages = ( "Category", "Date", "Description", "Amount")
+        for i, m in enumerate(messages):
+            build_grid_label(
+                parent=self.frame,
+                text=m,
+                sticky=tk.N,
+                row=2,
+                col=i,
+            )
+            scrollbar = tk.Scrollbar(self.frame)
+            talist = tk.Listbox(self.frame, yscrollcommand=scrollbar.set)
+            talist.grid(row=3, column=i)
+            for ta in data["transactions"]:
+                if calendar.month_name[int(ta["month"])] \
+                        != self.month_selected.get() \
+                    or ta["year"] != self.year_selected.get():
+                        continue
+                if m == "Date":
+                    text = "{} {} {}".format(
+                        ta["year"],
+                        calendar.month_name[int(ta["month"])],
+                        ta["day"],
+                    )
+                    talist.insert(tk.END, text)
+                    continue
+                talist.insert(tk.END, ta[m.lower()])
+            scrollbar.config(command=talist.yview)
 
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
     frame = tk.Frame(
