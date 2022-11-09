@@ -38,10 +38,10 @@ class StartPage(tk.Frame):
         tk.Frame.__init__(self, parent)
         self.parent = parent
 
+        self.view_ta_frame = StartViewTaFrame(parent=self)
         self.stats_frame = StartStatsFrame(parent=self)
         self.ta_frame = StartTaFrame(parent=self)
         self.cat_frame = StartCatFrame(parent=self)
-        self.view_ta_frame = StartViewTaFrame(parent=self)
 
     def refresh(self):
         self.parent.switch_frame(StartPage)
@@ -615,7 +615,7 @@ class StartStatsFrame(tk.Frame):
         average = self.calc_yearly_cat_average()
         text = "${:.2f}".format(average)
         if average == -1:
-            text = "No transactions during this year!"
+            text = "N/A"
         self.yearly_cat_average_label.config(text=text)
 
     def calc_yearly_total(self, year):
@@ -641,7 +641,7 @@ class StartStatsFrame(tk.Frame):
         average = self.calc_yearly_average()
         text = "${:.2f}".format(average)
         if average == -1:
-            text = "No transactions during this year!"
+            text = "N/A"
         self.yearly_average_amt_label.config(text=text)
 
     def calc_monthly_cat_total(self, month, year, category):
@@ -675,7 +675,7 @@ class StartStatsFrame(tk.Frame):
         average = self.calc_monthly_cat_average()
         text = "${:.2f}".format(average)
         if average == -1:
-            text = "No transactions during this month!"
+            text = "N/A"
         self.monthly_cat_average_label.config(text=text)
 
     def calc_monthly_total(self, month, year):
@@ -704,13 +704,13 @@ class StartStatsFrame(tk.Frame):
         average = self.calc_monthly_average()
         text = "${:.2f}".format(average)
         if average == -1:
-            text = "No transactions during this month!"
+            text = "N/A"
         self.monthly_average_label.config(text=text)
 
 class StartViewTaFrame(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
-        self.pack()
+        self.pack(side=tk.BOTTOM)
         self.parent = parent
 
         self.build()
