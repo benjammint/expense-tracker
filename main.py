@@ -149,18 +149,6 @@ class StartTaFrame(tk.Frame):
 
         self.parent.refresh()
 
-    def refresh_stats_year_grid_dropdown(self, menu, shownopt, row, col):
-        refresh_grid_dropdown(
-            section_frame=self.parent.stats_frame,
-            dropdown_menu=menu,
-            shownopt=shownopt,
-            options=data["years"],
-            row=row,
-            col=col,
-            errmsg="Add a transaction!",
-            defaultopt=str(datetime.datetime.now().year),
-        )
-
 class StartCatFrame(tk.Frame):
     def __init__(self, parent):
         tk.Frame.__init__(self, parent)
@@ -231,11 +219,32 @@ class StartStatsFrame(tk.Frame):
             colspan=6,
             sticky=tk.N,
         )
+        build_grid_label(
+            parent=self.frame,
+            text="Category",
+            row=1,
+            col=1,
+            sticky=tk.N,
+        )
+        build_grid_label(
+            parent=self.frame,
+            text="Month",
+            row=1,
+            col=2,
+            sticky=tk.N,
+        )
+        build_grid_label(
+            parent=self.frame,
+            text="Year",
+            row=1,
+            col=3,
+            sticky=tk.N,
+        )
 
         build_grid_label(
             parent=self.frame,
             text="Monthly Average",
-            row=1,
+            row=2,
             col=0,
         )
         self.average_monthly_ta_amt_selected = {
@@ -245,33 +254,33 @@ class StartStatsFrame(tk.Frame):
         build_month_grid_dropdown(
             parent=self.frame,
             shownopt=self.average_monthly_ta_amt_selected["month"],
-            row=1,
-            col=1,
+            row=2,
+            col=2,
         )
         self.average_monthly_year_menu = build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.average_monthly_ta_amt_selected["year"],
-            row=1,
-            col=2,
+            row=2,
+            col=3,
         )
         self.monthly_average_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=1,
-            col=4,
+            row=2,
+            col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=1,
-            col=3,
+            row=2,
+            col=4,
             callback=self.display_monthly_average,
         )
 
         build_grid_label(
             parent=self.frame,
             text="Monthly Total",
-            row=2,
+            row=3,
             col=0,
         )
         self.total_monthly_ta_amt_selected = {
@@ -281,33 +290,33 @@ class StartStatsFrame(tk.Frame):
         build_month_grid_dropdown(
             parent=self.frame,
             shownopt=self.total_monthly_ta_amt_selected["month"],
-            row=2,
-            col=1,
+            row=3,
+            col=2,
         )
         self.total_monthly_year_menu = build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.total_monthly_ta_amt_selected["year"],
-            row=2,
-            col=2,
+            row=3,
+            col=3,
         )
         self.monthly_total_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=2,
-            col=4,
+            row=3,
+            col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=2,
-            col=3,
+            row=3,
+            col=4,
             callback=self.display_monthly_total,
         )
 
         build_grid_label(
             parent=self.frame,
             text="Monthly Category Average",
-            row=3,
+            row=4,
             col=0,
         )
         self.average_monthly_cat_ta_amt_selected = {
@@ -319,32 +328,32 @@ class StartStatsFrame(tk.Frame):
             parent=self.frame,
             shownopt=self.average_monthly_cat_ta_amt_selected["cat"],
             options=data["categories"],
-            row=3,
+            row=4,
             col=1,
             errmsg="Create a category!",
         )
         build_month_grid_dropdown(
             parent=self.frame,
             shownopt=self.average_monthly_cat_ta_amt_selected["month"],
-            row=3,
+            row=4,
             col=2,
         )
         self.average_monthly_cat_year_menu = build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.average_monthly_cat_ta_amt_selected["year"],
-            row=3,
+            row=4,
             col=3,
         )
         self.monthly_cat_average_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=3,
+            row=4,
             col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=3,
+            row=4,
             col=4,
             callback=self.display_monthly_cat_average,
         )
@@ -352,7 +361,7 @@ class StartStatsFrame(tk.Frame):
         build_grid_label(
             parent=self.frame,
             text="Monthly Category Total",
-            row=4,
+            row=5,
             col=0,
         )
         self.total_monthly_cat_ta_amt_selected = {
@@ -364,32 +373,32 @@ class StartStatsFrame(tk.Frame):
             parent=self.frame,
             shownopt=self.total_monthly_cat_ta_amt_selected["cat"],
             options=data["categories"],
-            row=4,
+            row=5,
             col=1,
             errmsg="Create a category!",
         )
         build_month_grid_dropdown(
             parent=self.frame,
             shownopt=self.total_monthly_cat_ta_amt_selected["month"],
-            row=4,
+            row=5,
             col=2,
         )
         self.total_monthly_cat_year_menu = build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.total_monthly_cat_ta_amt_selected["year"],
-            row=4,
+            row=5,
             col=3,
         )
         self.monthly_cat_total_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=4,
+            row=5,
             col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=4,
+            row=5,
             col=4,
             callback=self.display_monthly_cat_total,
         )
@@ -397,61 +406,61 @@ class StartStatsFrame(tk.Frame):
         build_grid_label(
             parent=self.frame,
             text="Yearly Average",
-            row=5,
+            row=6,
             col=0,
         )
         self.yearly_average_ta_amt_selected = tk.StringVar()
         self.yearly_average_menu = build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.yearly_average_ta_amt_selected,
-            row=5,
-            col=1,
+            row=6,
+            col=3,
         )
         self.yearly_average_amt_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=5,
-            col=3,
+            row=6,
+            col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=5,
-            col=2,
+            row=6,
+            col=4,
             callback=self.display_yearly_average,
         )
 
         build_grid_label(
             parent=self.frame,
             text="Yearly Total",
-            row=6,
+            row=7,
             col=0,
         )
         self.yearly_total_ta_amt_selected = tk.StringVar()
         self.yearly_total_menu = build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.yearly_total_ta_amt_selected,
-            row=6,
-            col=1,
+            row=7,
+            col=3,
         )
         self.yearly_total_amt_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=6,
-            col=3,
+            row=7,
+            col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=6,
-            col=2,
+            row=7,
+            col=4,
             callback=self.display_yearly_total,
         )
 
         build_grid_label(
             parent=self.frame,
             text="Yearly Category Average",
-            row=7,
+            row=8,
             col=0,
         )
         self.yearly_cat_average_ta_amt_selected = {
@@ -462,34 +471,34 @@ class StartStatsFrame(tk.Frame):
             parent=self.frame,
             shownopt=self.yearly_cat_average_ta_amt_selected["cat"],
             options=data["categories"],
-            row=7,
+            row=8,
             col=1,
             errmsg="Create a category!",
         )
         build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.yearly_cat_average_ta_amt_selected["year"],
-            row=7,
-            col=2,
+            row=8,
+            col=3,
         )
         self.yearly_cat_average_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=7,
-            col=4,
+            row=8,
+            col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=7,
-            col=3,
+            row=8,
+            col=4,
             callback=self.display_yearly_cat_average,
         )
 
         build_grid_label(
             parent=self.frame,
             text="Yearly Category Total",
-            row=8,
+            row=9,
             col=0,
         )
         self.yearly_cat_total_ta_amt_selected = {
@@ -500,41 +509,42 @@ class StartStatsFrame(tk.Frame):
             parent=self.frame,
             shownopt=self.yearly_cat_total_ta_amt_selected["cat"],
             options=data["categories"],
-            row=8,
+            row=9,
             col=1,
             errmsg="Create a category!",
         )
         build_year_grid_dropdown(
             parent=self.frame,
             shownopt=self.yearly_cat_total_ta_amt_selected["year"],
-            row=8,
-            col=2,
+            row=9,
+            col=3,
         )
         self.yearly_cat_total_label = build_grid_label(
             parent=self.frame,
             text="<= Calculate!",
-            row=8,
-            col=4,
+            row=9,
+            col=5,
         )
         build_grid_button(
             parent=self.frame,
             text="Calculate",
-            row=8,
-            col=3,
+            row=9,
+            col=4,
             callback=self.display_yearly_cat_total,
         )
 
         build_grid_label(
             parent=self.frame,
-            text="Graph Categories against Transaction Amounts",
-            row=9,
+            text="Graph Categories against Transaction Amounts (Lifetime)",
+            row=10,
             col=0,
+            colspan=3,
         )
         build_grid_button(
             parent=self.frame,
             text="Graph",
-            row=9,
-            col=1,
+            row=10,
+            col=4,
             callback=self.graph_cat_vs_ta_amt,
         )
 
@@ -731,27 +741,6 @@ def build_grid_cal(parent, row, col):
     )
     cal.grid(row=row, column=col, sticky=tk.NSEW, padx=5, pady=5)
     return cal
-
-def refresh_grid_dropdown(
-    section_frame,
-    dropdown_menu,
-    shownopt,
-    options,
-    row,
-    col,
-    errmsg,
-    defaultopt=None
-):
-    dropdown_menu = None
-    dropdown_menu = build_grid_dropdown(
-        parent=section_frame.frame,
-        shownopt=shownopt,
-        defaultopt=defaultopt,
-        options=options,
-        row=row,
-        col=col,
-        errmsg=errmsg,
-    )
 
 def build_month_grid_dropdown(parent, shownopt, row, col):
     calendar_months = [ calendar.month_name[i + 1] for i in range(12) ]
