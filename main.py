@@ -768,22 +768,26 @@ class StartViewTaFrame(tk.Frame):
             scrollbar = tk.Scrollbar(self.frame)
             talist = tk.Listbox(self.frame, yscrollcommand=scrollbar.set)
             talist.grid(row=3, column=i)
-            for ta in data["transactions"]:
+            for j, ta in enumerate(data["transactions"]):
                 if calendar.month_name[int(ta["month"])] \
                         != self.month_selected.get() \
                     or ta["year"] != self.year_selected.get():
                         continue
-                if m == "Date":
-                    text = "{} {} {}".format(
+                key = m.lower()
+                text = f"[Entry {j + 1}] "
+                if key == "date":
+                    text += "{} {} {}".format(
                         ta["year"],
                         calendar.month_name[int(ta["month"])],
                         ta["day"],
                     )
-                    talist.insert(tk.END, text)
-                    continue
-                talist.insert(tk.END, ta[m.lower()])
+                else:
+                    if key == "amount":
+                        text += "$"
+                    text += ta[key]
+                talist.insert(tk.END, text)
             scrollbar.config(command=talist.yview)
-
+    
 def build_grid_frame(parent, anchor=tk.CENTER, cols=1):
     frame = tk.Frame(
         parent,
