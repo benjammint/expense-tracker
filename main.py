@@ -574,6 +574,7 @@ class StartStatsFrame(tk.Frame):
         amounts = [ 0 ] * len(months)
         for ta in data["transactions"]:
             amounts[int(ta["month"]) - 1] += float(ta["amount"])
+        plt.clf()
         plt.bar(months, amounts)
         plt.title("Monthly Transactions")
         plt.xlabel("Month")
@@ -586,6 +587,7 @@ class StartStatsFrame(tk.Frame):
         for ta in data["transactions"]:
             i = data["categories"].index(ta["category"])
             amounts[i] += float(ta["amount"])
+        plt.clf()
         plt.bar(data["categories"], amounts)
         plt.title("Transaction Amounts by Categories")
         plt.xlabel("Category")
