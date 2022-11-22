@@ -759,6 +759,24 @@ class StartViewTaFrame(tk.Frame):
 
     def display_tas(self):
         messages = ( "Category", "Date", "Description", "Amount")
+        month_tas = []
+        # get transactions that the user is asking for
+        for ta in data["transactions"]:
+            if calendar.month_name[int(ta["month"])] \
+                    != self.month_selected.get() \
+                    or ta["year"] != self.year_selected.get():
+                continue
+            month_tas.append(ta)
+        # sort transactions by date in month
+        for i in range(len(month_tas)):
+            swapped = False
+            for j in range(len(month_tas) - i - 1):
+                if int(month_tas[j]["day"]) > int(month_tas[j + 1]["day"]):
+                    month_tas[j], month_tas[j + 1] \
+                        = month_tas[j + 1], month_tas[j]
+                    swapped = True
+            if not swapped:
+                break
         for i, m in enumerate(messages):
             build_grid_label(
                 parent=self.frame,
@@ -770,11 +788,7 @@ class StartViewTaFrame(tk.Frame):
             scrollbar = tk.Scrollbar(self.frame)
             talist = tk.Listbox(self.frame, yscrollcommand=scrollbar.set)
             talist.grid(row=3, column=i)
-            for j, ta in enumerate(data["transactions"]):
-                if calendar.month_name[int(ta["month"])] \
-                        != self.month_selected.get() \
-                    or ta["year"] != self.year_selected.get():
-                        continue
+            for j, ta in enumerate(month_tas):
                 key = m.lower()
                 text = f"[Entry {j + 1}] "
                 if key == "date":
