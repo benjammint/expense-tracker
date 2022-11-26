@@ -10,7 +10,7 @@ import tkcalendar
 DATA_FILE = "data.json"
 data = {
     "categories": [], # required for tk.OptionMenu()
-    "years": [], # will be sorted in ascending order
+    "years": [], # will be sorted in non-descending order
     "transactions": [],
         # dict inside list
         # contains { category, year, month, day, amount, description }
@@ -127,13 +127,13 @@ class StartTaFrame(tk.Frame):
         if str(year) not in data["years"]:
             added = False
             for i, v in enumerate(data["years"]):
-                if year <= int(v):
+                if year < int(v):
                     data["years"].insert(i, str(year))
                     added = True
                     break
             if not added:
                 data["years"].append(str(year))
-                added ^= True
+                added = True
         data["transactions"].append({
             "category": self.ta_selected_cat.get(),
             "description": self.ta_entries[0][1].get(),
